@@ -1,12 +1,11 @@
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify, session, render_template
 import pandas as pd
 import math
 import difflib
 from flask_cors import CORS
 from flask_session import Session
 import uuid
-from flask import render_template
-
+import chardet
 
 app = Flask(__name__)
 CORS(app)
@@ -15,21 +14,19 @@ CORS(app)
 app.config['SECRET_KEY'] = 'your-secret-key'
 app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
-import pandas as pd
-import chardet
 
-# Automatically detect encoding
+# Detect encoding automatically (optional)
 with open('./MovieGenre.csv', 'rb') as f:
     result = chardet.detect(f.read())
     detected_encoding = result['encoding']
     print("Detected encoding:", detected_encoding)
+
 movies_data = pd.read_csv('./MovieGenre.csv', encoding='latin1')
 movies_data.fillna('', inplace=True)
 
 # Combine features for TF-IDF
 combined_features = (movies_data['Title'] + ' ' + movies_data['Genre']).tolist()
 
-# TF-IDF
 def compute_tf(doc):
     tf = {}
     words = doc.lower().split()
@@ -85,6 +82,7 @@ def rocchio_update(query_vec, relevant, non_relevant, alpha=1, beta=0.75, gamma=
     return {k: v for k, v in updated.items() if v > 0}
 
 tfidf_matrix = compute_tfidf(combined_features)
+
 session_data = {}
 
 def get_session_id():
@@ -95,21 +93,25 @@ def get_session_id():
 @app.route('/')
 def home():
     return render_template('index.html')
+
 @app.route('/recommend', methods=['POST'])
 def recommend():
     data = request.json
     movie_name = data.get('movieName', '').strip()
     genre_filter = data.get('genre', '').strip().lower()
     feedback = data.get('feedback', {})
-    current_indexes = data.get('currentRecIndexes', [])
+    new_search = data.get('newSearch', False)  # new search flag
 
     session_id = get_session_id()
-    if session_id not in session_data:
+
+    # Reset session data if new search or no session data exists
+    if new_search or session_id not in session_data:
         session_data[session_id] = {'query_vector': None, 'positive_docs': set(), 'negative_docs': set()}
 
     if not movie_name:
         return jsonify({'error': 'Movie name required'}), 400
 
+    # Initialize query vector from the closest matching movie title
     if session_data[session_id]['query_vector'] is None:
         titles = movies_data['Title'].tolist()
         match = difflib.get_close_matches(movie_name, titles, n=1)
@@ -118,6 +120,7 @@ def recommend():
         idx = movies_data[movies_data['Title'] == match[0]].index[0]
         session_data[session_id]['query_vector'] = tfidf_matrix[idx]
 
+    # Process feedback and update Rocchio query vector
     for idx_str, fb in feedback.items():
         idx = int(idx_str)
         if fb == 'relevant':
@@ -168,3 +171,4 @@ def recommend():
 if __name__ == '__main__':
     print("🚀 Starting MAFLIX Flask server at http://127.0.0.1:5000")
     app.run(debug=True)
+
