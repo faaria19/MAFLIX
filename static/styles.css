@@ -1,0 +1,48 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #b2dea0;
+    color: #3e1e1e;
+    text-align: center;
+}
+
+#search-container {
+    margin: 20px;
+}
+
+input,
+select,
+button {
+    padding: 8px;
+    margin: 5px;
+}
+
+#movies-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.movie-card {
+    background-color: #a0cad9;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin: 10px;
+    padding: 15px;
+    width: 200px;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.movie-card img {
+    width: 100%;
+    border-radius: 8px;
+}
+
+.movie-card button {
+    margin: 4px;
+    padding: 5px 10px;
+    border: none;
+    background-color: #800020;
+    color: rgb(211, 199, 199);
+    border-radius: 5px;
+    cursor: pointer;
+}

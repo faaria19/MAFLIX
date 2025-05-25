@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MAFLIX - Movie Recommender</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <h1>🎬 MAFLIX</h1>
+
+    <div id="search-container">
+        <input type="text" id="movieInput" placeholder="Search by movie title">
+        <select id="genreSelect">
+            <option value="">All Genres</option>
+        </select>
+        <button onclick="getRecommendations()">Search</button>
+    </div>
+
+    <div id="evaluation"></div>
+    <div id="movies-container"></div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>
